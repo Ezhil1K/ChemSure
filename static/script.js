@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Custom "Substance Not Found" message
                     searchResultsDiv.innerHTML = `
                         <div class="not-listed-message">
-                            <h3>Substance Not Listed in GADSL</h3>
+                            <h3 class="substance-name-not-found">Substance Not Listed in GADSL</h3>
                             <p>If a substance is not listed in GADSL, it generally means:</p>
                             <ul>
                                 <li><strong>Not a Known Concern:</strong> It isn't classified as regulated, restricted, or declarable.</li>
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     searchResultsDiv.innerHTML = `
                         <div class="not-listed-message">
-                            <h3>No GADSL Substances Found in PDF</h3>
+                            <h3 class="substance-name-not-found">No GADSL Substances Found in PDF</h3>
                             <p>Our analysis of the uploaded PDF did not identify any substances listed in the Global Automotive Declarable Substance List (GADSL).</p>
                             <ul>
                                 <li>This might be due to the PDF format (e.g., poor scan quality or image-based content).</li>
@@ -233,71 +233,104 @@ document.addEventListener("DOMContentLoaded", () => {
             const casRnForSummary = result.cas_rn || 'N/A';
             const classification = result.classification ? result.classification.trim() : '';
             
+            // Debugging: Log the classification to ensure it's what we expect
+            console.log("Classification for substance", substanceNameForSummary, ":", `'${classification}'`);
+
             // Ensure reason_code is uppercase, split, and sorted for consistent matching
             const rawReasonCode = result.reason_code ? result.reason_code.toUpperCase().trim() : '';
             const reasonCodesArray = rawReasonCode.split('/').map(rc => rc.trim()).filter(rc => rc !== ''); // Filter out empty strings
             const sortedReasonCodeString = reasonCodesArray.sort().join('&'); // e.g., "FA&LR" or "FI&FA&LR"
 
             let classificationSummaryContent = '';
+            let substanceNameClass = ''; // For color-coding the substance name
+            let resultItemClass = ''; // For background color of the result item
             let isCustomSummaryGenerated = false;
+
+            // Determine the class for the substance name and result item background based on classification
+            if (classification === 'P') {
+                substanceNameClass = 'substance-name-prohibited'; // Red
+                resultItemClass = 'result-item-prohibited'; // Light red background
+            } else if (classification === 'D') {
+                substanceNameClass = 'substance-name-declarable'; // Yellow
+                resultItemClass = 'result-item-declarable'; // Light yellow background
+            } else if (classification === 'D/P') {
+                substanceNameClass = 'substance-name-declarable-prohibited'; // Red
+                resultItemClass = 'result-item-declarable-prohibited'; // Light red background
+            } else if (classification === 'FI') {
+                substanceNameClass = 'substance-name-declarable'; // Yellow (treating FI as declarable for color purposes)
+                // No additional resultItemClass; use default light green background
+            } else {
+                substanceNameClass = 'substance-name-declarable'; // Default to yellow for unknown classifications
+                // No additional resultItemClass; use default light green background
+            }
+
+            // Debugging: Log the resultItemClass to ensure it's being set correctly
+            console.log("Result item class for", substanceNameForSummary, ":", resultItemClass);
+
+            // Apply the background class to the result item
+            if (resultItemClass) {
+                resultItem.classList.add(resultItemClass);
+                // Debugging: Log the classes on the resultItem to confirm
+                console.log("Classes on resultItem after adding", resultItemClass, ":", resultItem.className);
+            }
 
             // --- Construct summary based on classification and sorted reason code string ---
             if (classification === 'D/P') {
                 isCustomSummaryGenerated = true;
                 if (sortedReasonCodeString === 'FA&FI&LR') { // D/P&FI/FA/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). The substance has mixed classification, meaning it can be declared or prohibited depending on the application. It is tracked for information, legally regulated, and under assessment. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). The substance has mixed classification, meaning it can be declared or prohibited depending on the application. It is tracked for information, legally regulated, and under assessment. Must be declared if present above 0.1%.`;
                 } else if (sortedReasonCodeString === 'FA&LR') { // D/P&FA/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Declared or prohibited, under assessment and legally restricted. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Declared or prohibited, under assessment and legally restricted. Must be declared if present above 0.1%.`;
                 } else if (sortedReasonCodeString === 'FI&LR') { // D/P&FI/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Both declarable and prohibited, tracked for information and legally regulated. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Both declarable and prohibited, tracked for information and legally regulated. Must be declared if present above 0.1%.`;
                 } else if (sortedReasonCodeString === 'FA') { // D/P&FA
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Either declarable or prohibited, with ongoing assessment for stricter regulation. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). Either declarable or prohibited, with ongoing assessment for stricter regulation. Must be declared if present above 0.1%.`;
                 } else if (sortedReasonCodeString === 'LR') { // D/P&LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). The substance has both allowed and prohibited uses, requiring careful evaluation. It is also legally regulated. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). The substance has both allowed and prohibited uses, requiring careful evaluation. It is also legally regulated. Must be declared if present above 0.1%.`;
                 } else {
                     // Default D/P summary if no specific reason code combination matches
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). This substance has both allowed and prohibited uses in at least one region/market. Evaluate the substance entry to determine if individual substances are declarable or prohibited. Must be declared if present above 0.1%.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable/Prohibited (D/P). This substance has both allowed and prohibited uses in at least one region/market. Evaluate the substance entry to determine if individual substances are declarable or prohibited. Must be declared if present above 0.1%.`;
                 }
 
             } else if (classification === 'P') {
                 isCustomSummaryGenerated = true;
                 if (sortedReasonCodeString === 'LR') { // P&LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market. Legally Regulated status, indicating restrictions due to health and environmental risks.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market. Legally Regulated status, indicating restrictions due to health and environmental risks.`;
                 } else if (sortedReasonCodeString === 'FA') { // P&FA
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market. It is also For Assessment (FA), meaning it is under review for possible regulation adjustments.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market. It is also For Assessment (FA), meaning it is under review for possible regulation adjustments.`;
                 } else {
                     // Default P summary if no specific reason code combination matches
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Prohibited, meaning it is banned for automotive use in at least one region or market.`;
                 }
 
             } else if (classification === 'D') {
                 isCustomSummaryGenerated = true;
                 if (sortedReasonCodeString === 'FA&FI&LR') { // D&FI/FA/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared, tracked for information, legally regulated, and under assessment. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared, tracked for information, legally regulated, and under assessment. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'FA&FI') { // D&FI/FA
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared for information, but also under assessment for regulation. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared for information, but also under assessment for regulation. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'FI&LR') { // D&FI/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared for information and legally regulated in at least one market. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared for information and legally regulated in at least one market. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'FA&LR') { // D&FA/LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared, legally regulated, and under assessment for stricter control. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Declared, legally regulated, and under assessment for stricter control. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'FA') { // D&FA
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared and is under review for potential future regulation. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared and is under review for potential future regulation. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'LR') { // D&LR
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared and is legally restricted due to environmental or health risks. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared and is legally restricted due to environmental or health risks. Must be declared if it exceeds defined threshold limits.`;
                 } else if (sortedReasonCodeString === 'FI') { // D&FI
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared if above threshold but tracked only for information, without current regulatory restrictions. Must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). Must be declared if above threshold but tracked only for information, without current regulatory restrictions. Must be declared if it exceeds defined threshold limits.`;
                 } else {
                     // Default D summary if no specific reason code combination matches
-                    classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as Declarable (D). This substance must be declared if it exceeds defined threshold limits.`;
+                    classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as Declarable (D). This substance must be declared if it exceeds defined threshold limits.`;
                 }
 
             } else if (classification === 'FI') { // Standalone FI (without D, P, D/P)
                 isCustomSummaryGenerated = true;
-                classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as For Information (FI). This substance is tracked for informational purposes; no current regulatory prohibition or de-selection based solely on GADSL listing.`;
+                classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as For Information (FI). This substance is tracked for informational purposes; no current regulatory prohibition or de-selection based solely on GADSL listing.`;
             }
             // Fallback for classifications not explicitly handled above
             else {
-                classificationSummaryContent = `<strong>Summary:</strong><br>${substanceNameForSummary} (CAS RN: ${casRnForSummary}) is classified as ${classification || 'N/A'}. Reason Code: ${rawReasonCode || 'N/A'}. (Definition not explicitly available in this tool. Refer to official GADSL documentation.)`;
+                classificationSummaryContent = `<strong>Summary:</strong><br><span class="${substanceNameClass}">${substanceNameForSummary}</span> (CAS RN: ${casRnForSummary}) is classified as ${classification || 'N/A'}. Reason Code: ${rawReasonCode || 'N/A'}. (Definition not explicitly available in this tool. Refer to official GADSL documentation.)`;
                 // For fallback, we explicitly set this to false so raw Classification/Reason Code details are shown below.
                 isCustomSummaryGenerated = false; 
             }

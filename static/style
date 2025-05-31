@@ -128,6 +128,7 @@ h1, h2 {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1em;
+    box-sizing: border-box;
 }
 
 /* Button Styles */
@@ -141,6 +142,7 @@ h1, h2 {
     font-size: 1em;
     transition: background-color 0.2s;
     margin-right: 10px;
+    min-height: 44px; /* For touch accessibility */
 }
 
 .search-box button:hover {
@@ -161,6 +163,7 @@ h1, h2 {
     margin-left: auto;
     margin-right: auto;
     transition: background-color 0.2s;
+    min-height: 44px; /* For touch accessibility */
 }
 
 .clear-all-button:hover {
@@ -176,12 +179,28 @@ h1, h2 {
 
 /* Result Item Styles */
 .result-item {
-    background-color: #e9f7ef;
+    background-color: #e9f7ef; /* Default background (light green) for FI or other classifications */
     border: 1px solid #d4edda;
     padding: 20px;
     margin-bottom: 15px;
     border-radius: 8px;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Background colors based on classification */
+.result-item-prohibited {
+    background-color: #f8d7da !important; /* Light red for P */
+    border: 1px solid #f5c6cb !important; /* Slightly darker red border */
+}
+
+.result-item-declarable-prohibited {
+    background-color: #f8d7da !important; /* Light red for D/P */
+    border: 1px solid #f5c6cb !important; /* Slightly darker red border */
+}
+
+.result-item-declarable {
+    background-color: #fff3cd !important; /* Light yellow for D */
+    border: 1px solid #ffeeba !important; /* Slightly darker yellow border */
 }
 
 .result-item h3 {
@@ -192,6 +211,7 @@ h1, h2 {
 
 .result-item p {
     margin: 5px 0;
+    word-wrap: break-word; /* Ensure long text wraps on mobile */
 }
 
 .result-item strong {
@@ -213,13 +233,18 @@ h1, h2 {
 
 /* Not Listed Message Styles */
 .not-listed-message {
-    background-color: #f8d7da;
-    border-left: 5px solid #dc3545;
+    background-color: #e6f4ea; /* Light green background */
+    border-left: 5px solid #28a745; /* Green border */
     padding: 15px;
     margin-top: 20px;
     border-radius: 4px;
     font-size: 1em;
-    color: #721c24;
+    color: #155724; /* Darker green text */
+}
+
+.not-listed-message h3 {
+    margin-top: 0;
+    color: green; /* Keep the heading green for "not found" messages */
 }
 
 /* Error Message Styles */
@@ -269,6 +294,9 @@ footer {
     .navbar {
         padding: 15px 20px;
     }
+    .navbar-brand a {
+        font-size: 1.5em; /* Slightly smaller for mobile */
+    }
     .navbar-nav {
         display: none;
         flex-direction: column;
@@ -285,6 +313,11 @@ footer {
         margin: 10px 0;
         text-align: center;
     }
+    .navbar-nav a {
+        font-size: 1em;
+        padding: 15px;
+        display: block; /* Full-width clickable area */
+    }
     .navbar-toggle {
         display: block;
     }
@@ -296,14 +329,75 @@ footer {
         min-width: 100%;
         padding: 15px;
     }
+    .search-box input[type="text"],
+    .search-box input[type="file"] {
+        font-size: 0.9em;
+        padding: 12px; /* Larger padding for touch */
+        min-height: 44px; /* For touch accessibility */
+    }
     .container {
         padding: 15px;
+        margin: 10px; /* Add margin for better spacing on mobile */
+    }
+    h1, h2 {
+        font-size: 1.5em; /* Smaller headings on mobile */
+    }
+    .disclaimer {
+        font-size: 0.9em;
+    }
+    .result-item {
+        padding: 15px;
+    }
+    .result-item p {
+        font-size: 0.9em;
+    }
+    .summary-box {
+        font-size: 0.9em;
     }
 }
 
 @media (max-width: 400px) {
+    .navbar {
+        padding: 10px 15px;
+    }
+    .navbar-brand a {
+        font-size: 1.3em;
+    }
+    .navbar-nav {
+        top: 50px; /* Adjust for smaller navbar height */
+    }
+    .search-box {
+        padding: 10px;
+    }
     .search-box input[type="text"],
     .search-box input[type="file"] {
         width: 100%;
+        font-size: 0.85em;
+    }
+    .search-box button {
+        width: 100%; /* Full-width buttons on very small screens */
+        padding: 12px;
+    }
+    .clear-all-button {
+        width: 100%;
+        padding: 12px;
+    }
+    h1, h2 {
+        font-size: 1.3em;
+    }
+    .disclaimer {
+        font-size: 0.85em;
+    }
+    .result-item {
+        padding: 10px;
+    }
+    .result-item p {
+        font-size: 0.85em;
+    }
+    .summary-box {
+        font-size: 0.85em;
+    }
+    footer {
+        font-size: 0.9em;
     }
 }

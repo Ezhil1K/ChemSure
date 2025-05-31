@@ -7,10 +7,70 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0; /* Updated for navbar */
+            padding: 0; /* Updated for better control */
             background-color: #f4f4f4;
             color: #333;
+            display: flex; /* Added for full height layout */
+            flex-direction: column;
+            min-height: 100vh; /* Ensure full viewport height */
+            padding-top: 70px; /* Space for fixed navbar */
         }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2c3e50;
+            padding: 15px 50px;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .navbar-nav {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .navbar-nav li {
+            margin-left: 30px;
+        }
+
+        .navbar-nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1em;
+            padding: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-nav a:hover,
+        .navbar-nav a.active {
+            color: #3498db;
+        }
+
+        .navbar-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            padding: 10px;
+        }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -18,21 +78,25 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex: 1; /* Added to fill available space */
         }
+
         h1, h2 {
             color: #0056b3;
             text-align: center;
             margin-bottom: 25px;
         }
+
         .disclaimer {
-            background-color: #ffe0b2; /* Light orange */
-            border-left: 5px solid #ff9800; /* Darker orange */
+            background-color: #ffe0b2;
+            border-left: 5px solid #ff9800;
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 4px;
-            font-size: 0.9em;
+            font-size: 1em; /* Updated for readability */
             color: #333;
         }
+
         .search-section {
             display: flex;
             justify-content: space-around;
@@ -40,19 +104,22 @@
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
+
         .search-box {
             flex: 1;
-            min-width: 300px;
+            min-width: 200px; /* Reduced from 300px */
             border: 1px solid #ddd;
             padding: 20px;
             border-radius: 8px;
             background-color: #f9f9f9;
         }
+
         .search-box label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
         }
+
         .search-box input[type="text"],
         .search-box input[type="file"] {
             width: calc(100% - 20px);
@@ -62,6 +129,7 @@
             border-radius: 4px;
             font-size: 1em;
         }
+
         .search-box button {
             background-color: #007bff;
             color: white;
@@ -71,13 +139,15 @@
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.2s;
-            margin-right: 10px; /* Space between buttons */
+            margin-right: 10px;
         }
+
         .search-box button:hover {
             background-color: #0056b3;
         }
-        .clear-all-button { /* Style for the universal clear button */
-            background-color: #dc3545; /* Red */
+
+        .clear-all-button {
+            background-color: #dc3545;
             color: white;
             padding: 12px 20px;
             border: none;
@@ -85,69 +155,81 @@
             cursor: pointer;
             font-size: 1.1em;
             margin-top: 20px;
-            display: block; /* Make it block to center */
+            display: block;
             margin-left: auto;
             margin-right: auto;
             transition: background-color 0.2s;
         }
+
         .clear-all-button:hover {
-            background-color: #c82333; /* Darker red */
+            background-color: #c82333;
         }
+
         .results-section {
             margin-top: 30px;
             border-top: 1px solid #eee;
             padding-top: 20px;
         }
+
         .result-item {
-            background-color: #e9f7ef; /* Light green for result */
+            background-color: #e9f7ef;
             border: 1px solid #d4edda;
             padding: 20px;
             margin-bottom: 15px;
             border-radius: 8px;
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
         }
+
         .result-item h3 {
-            color: #28a745; /* Green for substance name */
+            color: #28a745;
             margin-top: 0;
             margin-bottom: 10px;
         }
+
         .result-item p {
             margin: 5px 0;
         }
+
         .result-item strong {
-            color: #0056b3; /* Blue for labels */
+            color: #0056b3;
         }
+
         .result-item .summary-box {
             margin-top: 15px;
             padding: 15px;
-            border: 1px dashed #6c757d; /* Grey dashed border */
+            border: 1px dashed #6c757d;
             border-radius: 5px;
-            background-color: #f8f9fa; /* Light grey background */
+            background-color: #f8f9fa;
             font-style: italic;
         }
+
         .result-item .summary-box strong {
-            color: #dc3545; /* Red for emphasis in summary */
+            color: #dc3545;
         }
+
         .not-listed-message {
-            background-color: #f8d7da; /* Light red/pink for warnings */
-            border-left: 5px solid #dc3545; /* Darker red */
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
             padding: 15px;
             margin-top: 20px;
             border-radius: 4px;
-            font-size: 0.95em;
-            color: #721c24; /* Dark red text */
+            font-size: 1em; /* Updated for readability */
+            color: #721c24;
         }
+
         .error-message {
-            color: #dc3545; /* Red */
+            color: #dc3545;
             margin-top: 15px;
             font-weight: bold;
         }
+
         .loading-message {
             text-align: center;
             margin-top: 20px;
             font-style: italic;
             color: #555;
         }
+
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             width: 36px;
@@ -159,24 +241,90 @@
             vertical-align: middle;
             margin-left: 10px;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+            .navbar-nav {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                background-color: #2c3e50;
+            }
+            .navbar-nav.active {
+                display: flex;
+            }
+            .navbar-nav li {
+                margin: 10px 0;
+                text-align: center;
+            }
+            .navbar-toggle {
+                display: block;
+            }
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box {
+                min-width: 100%;
+                padding: 15px; /* Reduced padding on mobile */
+            }
+            .container {
+                padding: 15px; /* Reduced padding on mobile */
+            }
+        }
+
+        @media (max-width: 400px) {
+            .search-box input[type="text"],
+            .search-box input[type="file"] {
+                width: 100%; /* Ensure inputs are full-width on very narrow screens */
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            background-color: #e9ecef;
+            color: #6c757d;
+            font-size: 1em;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="/">ChemSure</a>
+        </div>
+        <div class="navbar-toggle">☰</div>
+        <ul class="navbar-nav">
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+    </nav>
     <div class="container">
         <h1>ChemSure GADSL Substance Search</h1>
         <div class="disclaimer">
             <strong>Disclaimer:</strong> This tool is for reference purposes only. It is strongly recommended to cross-check with the official GADSL site for the most accurate and up-to-date information.
             <div style="margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; text-align: center;">
-    <p style="margin-bottom: 5px; font-size: 0.9em; color: #555;">
-        The **Global Automotive Declarable Substance List (GADSL)** provides a list of substances relevant to the automotive industry that are subject to declaration or prohibition. Its purpose is to facilitate the exchange of information regarding the composition of materials and parts within the automotive supply chain.
-    </p>
-    <p style="font-size: 0.9em; color: #555;">
-        For the most accurate and up-to-date information, please refer to the <a href="https://www.gadsl.org/" target="_blank" style="color: #007bff; text-decoration: none;">official GADSL website</a>.
-    </p>
+                <p style="margin-bottom: 5px; font-size: 1em; color: #555;">
+                    The <strong>Global Automotive Declarable Substance List (GADSL)</strong> provides a list of substances relevant to the automotive industry that are subject to declaration or prohibition. Its purpose is to facilitate the exchange of information regarding the composition of materials and parts within the automotive supply chain.
+                </p>
+                <p style="font-size: 1em; color: #555;">
+                    For the most accurate and up-to-date information, please refer to the <a href="https://www.gadsl.org/" target="_blank" style="color: #007bff; text-decoration: none;">official GADSL website</a>.
+                </p>
+            </div>
         </div>
         <div class="search-section">
             <div class="search-box">
@@ -210,48 +358,60 @@
             </div>
         </div>
     </div>
+    <footer>
+        <p>© 2025 ChemSure. All rights reserved.</p>
+    </footer>
     <script>
+        // Navbar toggle for mobile
+        document.querySelector('.navbar-toggle').addEventListener('click', () => {
+            document.querySelector('.navbar-nav').classList.toggle('active');
+        });
+
         const loadingMessage = document.getElementById('loadingMessage');
         const errorMessage = document.getElementById('errorMessage');
         const resultsContent = document.getElementById('resultsContent');
         const casRnInput = document.getElementById('casRnInput');
         const substanceNameInput = document.getElementById('substanceNameInput');
         const msdsFileInput = document.getElementById('msdsFileInput');
+
         function showLoading() {
             loadingMessage.style.display = 'block';
             errorMessage.style.display = 'none';
-            resultsContent.innerHTML = ''; // Clear previous results
+            resultsContent.innerHTML = '';
         }
+
         function hideLoading() {
             loadingMessage.style.display = 'none';
         }
+
         function displayError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             hideLoading();
         }
+
         function clearAll() {
             casRnInput.value = '';
             substanceNameInput.value = '';
-            msdsFileInput.value = ''; // Clears the selected file
+            msdsFileInput.value = '';
             resultsContent.innerHTML = '<p>No results yet. Perform a search or upload a PDF.</p>';
             errorMessage.style.display = 'none';
             hideLoading();
         }
+
         function displayResults(data) {
             hideLoading();
             errorMessage.style.display = 'none';
             if (data.results && data.results.length > 0) {
-                resultsContent.innerHTML = ''; // Clear placeholder
+                resultsContent.innerHTML = '';
                 data.results.forEach(item => {
                     let conciseSummary = '';
                     if (item.substance_name && item.cas_rn && item.classification) {
-                        const classification = item.classification; 
-                        const reasonCode = item.reason_code; 
+                        const classification = item.classification;
+                        const reasonCode = item.reason_code;
                         let classificationSummary = '';
                         let regulatoryStatusSummary = '';
-                        
-                        // --- Concise Classification Summary ---
+
                         if (classification.trim() === 'P') {
                             classificationSummary = `Prohibited (P). This substance is **prohibited** for all automotive uses in at least one region/market, or may not exceed a regulated threshold limit. It must still be declared if present above 0.1%.`;
                         } else if (classification.trim() === 'D') {
@@ -260,11 +420,10 @@
                             classificationSummary = `Declarable or Prohibited (D/P). This substance has **both allowed and prohibited uses** in at least one region/market. Evaluate the substance entry to determine if individual substances are declarable or prohibited. Must be declared if present above 0.1%.`;
                         } else if (classification.includes('Declarable (D)') && classification.includes('For Information (FI)')) {
                             classificationSummary = `Declarable (D) and For Information (FI). This substance **must be declared** if above threshold. It's tracked for informational purposes; no current regulatory prohibition or de-selection based solely on GADSL listing.`;
-                        }
-                        else {
+                        } else {
                             classificationSummary = `Definition for "${classification}" not explicitly available in this tool. Refer to official GADSL documentation.`;
                         }
-                        // --- Concise Regulatory Status Summary ---
+
                         if (reasonCode) {
                             switch (reasonCode.toUpperCase().trim()) {
                                 case 'LR':
@@ -280,7 +439,7 @@
                                     regulatoryStatusSummary = `<strong>Reason Code:</strong> ${reasonCode}. (Definition not explicitly available in this tool. Refer to official GADSL documentation.)`;
                             }
                         }
-                        // Assemble the full concise summary for the substance as requested
+
                         conciseSummary = `
                             <div class="summary-box">
                                 <p><strong>Substance:</strong> ${item.substance_name}  <strong>CAS RN:</strong> ${item.cas_rn}  <strong>Classification:</strong> ${item.classification}</p>
@@ -289,7 +448,7 @@
                             </div>
                         `;
                     }
- 
+
                     resultsContent.innerHTML += `
                         <div class="result-item">
                             <h3>${item.substance_name || 'N/A'}</h3>
@@ -301,7 +460,7 @@
                             <p><strong>First Added:</strong> ${item.first_added || 'N/A'}</p>
                             <p><strong>Last Revised:</strong> ${item.last_revised || 'N/A'}</p>
                             <p><strong>Generic Examples:</strong> ${item.generic_examples || 'N/A'}</p>
-                            ${conciseSummary} 
+                            ${conciseSummary}
                         </div>
                     `;
                 });
@@ -318,6 +477,7 @@
                 `;
             }
         }
+
         async function searchByCasRn() {
             const casRn = casRnInput.value.trim();
             if (!casRn) {
@@ -335,7 +495,7 @@
                 console.log('Response status for CAS RN:', response.status);
                 
                 if (!response.ok) {
-                    const errorText = await response.text(); // Get raw text to help debug
+                    const errorText = await response.text();
                     console.error('Server responded with error for CAS RN:', response.status, errorText);
                     let errorMsg = `Failed to search by CAS RN. Server status: ${response.status}.`;
                     try {
@@ -345,7 +505,7 @@
                         // Not JSON, use generic message
                     }
                     displayError(errorMsg);
-                    return; 
+                    return;
                 }
                 const data = await response.json();
                 console.log('Received data for CAS RN:', data);
@@ -354,9 +514,10 @@
                 console.error('Critical error in searchByCasRn:', error);
                 displayError('A critical network error occurred or the server returned an unreadable response.');
             } finally {
-                hideLoading(); // Ensure loading is hidden regardless of success or failure
+                hideLoading();
             }
         }
+
         async function searchBySubstanceName() {
             const substanceName = substanceNameInput.value.trim();
             if (!substanceName) {
@@ -373,7 +534,7 @@
                 });
                 console.log('Response status for Substance Name:', response.status);
                 if (!response.ok) {
-                    const errorText = await response.text(); // Get raw text to help debug
+                    const errorText = await response.text();
                     console.error('Server responded with error for Substance Name:', response.status, errorText);
                     let errorMsg = `Failed to search by substance name. Server status: ${response.status}.`;
                     try {
@@ -392,9 +553,10 @@
                 console.error('Critical error in searchBySubstanceName:', error);
                 displayError('A critical network error occurred or the server returned an unreadable response.');
             } finally {
-                hideLoading(); // Ensure loading is hidden regardless of success or failure
+                hideLoading();
             }
         }
+
         async function uploadMsdsPdf() {
             const fileInput = msdsFileInput;
             if (fileInput.files.length === 0) {
@@ -412,7 +574,7 @@
                 });
                 console.log('Response status for PDF upload:', response.status);
                 if (!response.ok) {
-                    const errorText = await response.text(); // Get raw text to help debug
+                    const errorText = await response.text();
                     console.error('Server responded with error for PDF upload:', response.status, errorText);
                     let errorMsg = `Failed to upload and analyze PDF. Server status: ${response.status}.`;
                     try {
@@ -431,10 +593,9 @@
                 console.error('Critical error in uploadMsdsPdf:', error);
                 displayError('A critical network error occurred or the server returned an unreadable response.');
             } finally {
-                hideLoading(); // Ensure loading is hidden regardless of success or failure
+                hideLoading();
             }
         }
     </script>
 </body>
 </html>
-

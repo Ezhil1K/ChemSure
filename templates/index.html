@@ -32,33 +32,35 @@
             </div>
         </div>
         <div class="search-section">
-            <div class="search-box">
-                <h2>Search by CAS RN</h2>
-                <label for="casRnInput">Enter CAS RN:</label>
-                <input type="text" id="casRnInput" placeholder="e.g., 75-07-0">
-                <button onclick="searchByCasRn()">Search</button>
-            </div>
-            <div class="search-box">
-                <h2>Search by Substance Name</h2>
-                <label for="substanceNameInput">Enter Substance Name:</label>
-                <input type="text" id="substanceNameInput" placeholder="e.g., Acetaldehyde">
-                <button onclick="searchBySubstanceName()">Search</button>
-            </div>
+            <form id="searchForm" class="search-section">
+                <div class="search-box">
+                    <h2>Search by CAS RN</h2>
+                    <label for="casRnInput">Enter CAS RN:</label>
+                    <input type="text" id="casRn" name="casRn" placeholder="e.g., 75-07-0">
+                    <button type="submit" id="searchCasButton">Search</button>
+                </div>
+                <div class="search-box">
+                    <h2>Search by Substance Name</h2>
+                    <label for="substanceNameInput">Enter Substance Name:</label>
+                    <input type="text" id="substanceName" name="substanceName" placeholder="e.g., Acetaldehyde">
+                    <button type="submit" id="searchNameButton">Search</button>
+                </div>
+            </form>
             <div class="search-box">
                 <h2>Upload MSDS PDF</h2>
                 <label for="msdsFileInput">Select PDF file:</label>
-                <input type="file" id="msdsFileInput" accept=".pdf">
-                <button onclick="uploadMsdsPdf()">Upload and Analyze</button>
+                <input type="file" id="msdsPdfFile" accept=".pdf">
+                <button id="uploadPdfButton">Upload and Analyze</button>
             </div>
         </div>
-        <button class="clear-all-button" onclick="clearAll()">Clear All</button>
-        <div class="loading-message" id="loadingMessage" style="display: none;">
+        <button class="clear-all-button" id="clearSearchButton">Clear All</button>
+        <div class="loading-message" id="uploadProgress" style="display: none;">
             Processing... <div class="spinner"></div>
         </div>
         <div class="error-message" id="errorMessage" style="display: none;"></div>
         <div class="results-section" id="resultsSection">
             <h2>Search Results</h2>
-            <div id="resultsContent">
+            <div id="searchResults">
                 <p>No results yet. Perform a search or upload a PDF.</p>
             </div>
         </div>
@@ -66,241 +68,12 @@
     <footer>
         <p>© 2025 ChemSure. All rights reserved.</p>
     </footer>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
         // Navbar toggle for mobile
         document.querySelector('.navbar-toggle').addEventListener('click', () => {
             document.querySelector('.navbar-nav').classList.toggle('active');
         });
-
-        const loadingMessage = document.getElementById('loadingMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const resultsContent = document.getElementById('resultsContent');
-        const casRnInput = document.getElementById('casRnInput');
-        const substanceNameInput = document.getElementById('substanceNameInput');
-        const msdsFileInput = document.getElementById('msdsFileInput');
-
-        function showLoading() {
-            loadingMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            resultsContent.innerHTML = '';
-        }
-
-        function hideLoading() {
-            loadingMessage.style.display = 'none';
-        }
-
-        function displayError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            hideLoading();
-        }
-
-        function clearAll() {
-            casRnInput.value = '';
-            substanceNameInput.value = '';
-            msdsFileInput.value = '';
-            resultsContent.innerHTML = '<p>No results yet. Perform a search or upload a PDF.</p>';
-            errorMessage.style.display = 'none';
-            hideLoading();
-        }
-
-        function displayResults(data) {
-            hideLoading();
-            errorMessage.style.display = 'none';
-            if (data.results && data.results.length > 0) {
-                resultsContent.innerHTML = '';
-                data.results.forEach(item => {
-                    let conciseSummary = '';
-                    if (item.substance_name && item.cas_rn && item.classification) {
-                        const classification = item.classification;
-                        const reasonCode = item.reason_code;
-                        let classificationSummary = '';
-                        let regulatoryStatusSummary = '';
-
-                        if (classification.trim() === 'P') {
-                            classificationSummary = `Prohibited (P). This substance is **prohibited** for all automotive uses in at least one region/market, or may not exceed a regulated threshold limit. It must still be declared if present above 0.1%.`;
-                        } else if (classification.trim() === 'D') {
-                            classificationSummary = `Declarable (D). This substance **must be declared** if it exceeds defined threshold limits.`;
-                        } else if (classification.includes('D/P') || (classification.includes('Declarable (D)') && classification.includes('P'))) {
-                            classificationSummary = `Declarable or Prohibited (D/P). This substance has **both allowed and prohibited uses** in at least one region/market. Evaluate the substance entry to determine if individual substances are declarable or prohibited. Must be declared if present above 0.1%.`;
-                        } else if (classification.includes('Declarable (D)') && classification.includes('For Information (FI)')) {
-                            classificationSummary = `Declarable (D) and For Information (FI). This substance **must be declared** if above threshold. It's tracked for informational purposes; no current regulatory prohibition or de-selection based solely on GADSL listing.`;
-                        } else {
-                            classificationSummary = `Definition for "${classification}" not explicitly available in this tool. Refer to official GADSL documentation.`;
-                        }
-
-                        if (reasonCode) {
-                            switch (reasonCode.toUpperCase().trim()) {
-                                case 'LR':
-                                    regulatoryStatusSummary = `<strong>Regulatory Status (LR - Legally Regulated):</strong> Subject to legal regulation due to its potential risks when used in vehicle parts or materials, particularly concerning health and environmental safety. Examples include emissions, such as odor testing or fogging.`;
-                                    break;
-                                case 'FA':
-                                    regulatoryStatusSummary = `<strong>Regulatory Status (FA - For Assessment):</strong> Projected to be regulated by government agencies, per GASG Steering Committee decision.`;
-                                    break;
-                                case 'FI':
-                                    regulatoryStatusSummary = `<strong>Regulatory Status (FI - For Information):</strong> Tracked for information only, per GASG Steering Committee decision. Does not imply prohibition or de-selection from use.`;
-                                    break;
-                                default:
-                                    regulatoryStatusSummary = `<strong>Reason Code:</strong> ${reasonCode}. (Definition not explicitly available in this tool. Refer to official GADSL documentation.)`;
-                            }
-                        }
-
-                        conciseSummary = `
-                            <div class="summary-box">
-                                <p><strong>Substance:</strong> ${item.substance_name}  <strong>CAS RN:</strong> ${item.cas_rn}  <strong>Classification:</strong> ${item.classification}</p>
-                                <p>${classificationSummary}</p>
-                                <p>${regulatoryStatusSummary}</p>
-                            </div>
-                        `;
-                    }
-
-                    resultsContent.innerHTML += `
-                        <div class="result-item">
-                            <h3>${item.substance_name || 'N/A'}</h3>
-                            <p><strong>CAS RN:</strong> ${item.cas_rn || 'N/A'}</p>
-                            <p><strong>Classification:</strong> ${item.classification || 'N/A'}</p>
-                            <p><strong>Reason Code:</strong> ${item.reason_code || 'N/A'}</p>
-                            <p><strong>Source:</strong> ${item.source || 'N/A'}</p>
-                            <p><strong>Reporting Threshold:</strong> ${item.reporting_threshold || 'N/A'}</p>
-                            <p><strong>First Added:</strong> ${item.first_added || 'N/A'}</p>
-                            <p><strong>Last Revised:</strong> ${item.last_revised || 'N/A'}</p>
-                            <p><strong>Generic Examples:</strong> ${item.generic_examples || 'N/A'}</p>
-                            ${conciseSummary}
-                        </div>
-                    `;
-                });
-            } else {
-                resultsContent.innerHTML = `
-                    <div class="not-listed-message">
-                        <h3>Substance Not Found in GADSL</h3>
-                        <p>If a substance is not listed in the Global Automotive Declarable Substance List (GADSL), it generally means:</p>
-                        <ul>
-                            <li><strong>It’s Not a Known Concern:</strong> The substance may not be classified as regulated, restricted, or declarable under current automotive industry standards.</li>
-                            <li><strong>Important Note:</strong> Manufacturers and suppliers should still consider local regulations (e.g., REACH, TSCA, etc.), environmental impact, and occupational health before using any unlisted substance. This tool provides GADSL-specific information only.</li>
-                        </ul>
-                    </div>
-                `;
-            }
-        }
-
-        async function searchByCasRn() {
-            const casRn = casRnInput.value.trim();
-            if (!casRn) {
-                displayError('Please enter a CAS RN.');
-                return;
-            }
-            showLoading();
-            try {
-                console.log('Sending CAS RN search request for:', casRn);
-                const response = await fetch('/lookup_by_cas_rn', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cas_rn: casRn })
-                });
-                console.log('Response status for CAS RN:', response.status);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Server responded with error for CAS RN:', response.status, errorText);
-                    let errorMsg = `Failed to search by CAS RN. Server status: ${response.status}.`;
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMsg = errorData.error || errorMsg;
-                    } catch (e) {
-                        // Not JSON, use generic message
-                    }
-                    displayError(errorMsg);
-                    return;
-                }
-                const data = await response.json();
-                console.log('Received data for CAS RN:', data);
-                displayResults(data);
-            } catch (error) {
-                console.error('Critical error in searchByCasRn:', error);
-                displayError('A critical network error occurred or the server returned an unreadable response.');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function searchBySubstanceName() {
-            const substanceName = substanceNameInput.value.trim();
-            if (!substanceName) {
-                displayError('Please enter a substance name.');
-                return;
-            }
-            showLoading();
-            try {
-                console.log('Sending Substance Name search request for:', substanceName);
-                const response = await fetch('/lookup_by_substance_name', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ substance_name: substanceName })
-                });
-                console.log('Response status for Substance Name:', response.status);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Server responded with error for Substance Name:', response.status, errorText);
-                    let errorMsg = `Failed to search by substance name. Server status: ${response.status}.`;
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMsg = errorData.error || errorMsg;
-                    } catch (e) {
-                        // Not JSON, use generic message
-                    }
-                    displayError(errorMsg);
-                    return;
-                }
-                const data = await response.json();
-                console.log('Received data for Substance Name:', data);
-                displayResults(data);
-            } catch (error) {
-                console.error('Critical error in searchBySubstanceName:', error);
-                displayError('A critical network error occurred or the server returned an unreadable response.');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function uploadMsdsPdf() {
-            const fileInput = msdsFileInput;
-            if (fileInput.files.length === 0) {
-                displayError('Please select a PDF file to upload.');
-                return;
-            }
-            const formData = new FormData();
-            formData.append('msds_pdf', fileInput.files[0]);
-            showLoading();
-            try {
-                console.log('Uploading MSDS PDF:', fileInput.files[0].name);
-                const response = await fetch('/upload_msds_pdf', {
-                    method: 'POST',
-                    body: formData
-                });
-                console.log('Response status for PDF upload:', response.status);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Server responded with error for PDF upload:', response.status, errorText);
-                    let errorMsg = `Failed to upload and analyze PDF. Server status: ${response.status}.`;
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMsg = errorData.error || errorMsg;
-                    } catch (e) {
-                        // Not JSON, use generic message
-                    }
-                    displayError(errorMsg);
-                    return;
-                }
-                const data = await response.json();
-                console.log('Received data for PDF upload:', data);
-                displayResults(data);
-            } catch (error) {
-                console.error('Critical error in uploadMsdsPdf:', error);
-                displayError('A critical network error occurred or the server returned an unreadable response.');
-            } finally {
-                hideLoading();
-            }
-        }
     </script>
 </body>
 </html>
